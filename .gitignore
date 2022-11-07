@@ -1,0 +1,17 @@
+# Windows: 自动生成的垃圾文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+# Python: 编译产生的.pyc、.pyo、dist等文件或目录
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+*.eddx
+# My configurations: 自定义文件
+#把指定文件排除在.gitignore规则外的写法就是!+文件名
