@@ -1,9 +1,4 @@
 from enum import IntEnum
-from django.db.migrations.utils import COMPILED_REGEX_TYPE
-from uvicorn.lifespan import on
-
-from apps.utils.base_model import BaseModel
-from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -71,7 +66,8 @@ class UserCompany(models.Model):
     password = models.CharField(max_length=200)
     address = models.CharField(max_length=200,default="unkown adress")
     resume = models.TextField(max_length=200,default="this is resume")
-
+    def __str__(self):
+        return "%s" % ( self.name)
     class Meta:
         db_table = 'user_company'
         verbose_name = 'user_company'
@@ -79,16 +75,17 @@ class UserCompany(models.Model):
 
 class Products(models.Model):
     user = models.ForeignKey(UserCompany,related_name='company_products',on_delete=models.CASCADE)
-    SKU = models.CharField(max_length=200,default="unkown sku")
+    SKU = models.CharField(max_length=200,default="unkown sku",null=True)
     name = models.CharField(max_length=200)
     image = models.CharField(max_length=200,default="unkown image")
     type  = models.SmallIntegerField(choices=ProductType.choices(),default=0)
     categories = models.CharField(max_length=200,default="unkown categories")
     price = models.CharField(max_length=200,default=0)
-    number = models.CharField(max_length=200,default=1)
+    number = models.CharField(max_length=200,default=0)
     visible = models.BooleanField(default=True) #1 可见 0 不可见
     description = models.TextField(default="this is a description")
-
+    def __str__(self):
+        return "%s %s" % ( self.name, self.user)
     class Meta:
         db_table = 'products'
         verbose_name = 'products'
@@ -97,7 +94,7 @@ class Products(models.Model):
 class Carts(models.Model):
     user = models.ForeignKey(UserCustomer,related_name='customer_carts',on_delete=models.CASCADE)
     product = models.ForeignKey(Products, related_name='products_carts',on_delete=models.CASCADE)
-    number = models.CharField(max_length=200,default=1)
+    number = models.CharField(max_length=200,default=0)
     total_price = models.CharField(max_length=200,default=0)
 
     class Meta:
@@ -107,8 +104,8 @@ class Carts(models.Model):
 
 class Orders(models.Model):
     product = models.ForeignKey(Products,related_name='order_product',on_delete=models.CASCADE)
-    number = models.CharField(max_length=200,default=1)
-    total_money = models.CharField(max_length=200,default=1)
+    number = models.CharField(max_length=200,default=0)
+    total_money = models.CharField(max_length=200,default=0)
 
     class Meta:
         db_table = 'orders'
@@ -119,7 +116,7 @@ class OrderDtails(models.Model):
     order = models.ForeignKey(Orders,related_name='order_dtails',on_delete=models.CASCADE)
     user = models.ForeignKey(UserCustomer,related_name='order_user',on_delete=models.CASCADE)
     status = models.SmallIntegerField(choices=OrderStatus.choices(),default=0)
-    all_money = models.CharField(max_length=200,default=1)
+    all_money = models.CharField(max_length=200,default=0)
     payment = models.SmallIntegerField(choices=OrderPayment.choices(),default=0)
 
     class Meta:
