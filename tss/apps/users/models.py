@@ -1,6 +1,6 @@
 from enum import IntEnum
-
 from django.db.migrations.utils import COMPILED_REGEX_TYPE
+from uvicorn.lifespan import on
 
 from apps.utils.base_model import BaseModel
 from django.contrib.auth.models import User
@@ -72,9 +72,6 @@ class UserCompany(models.Model):
     address = models.CharField(max_length=200,default="unkown adress")
     resume = models.TextField(max_length=200,default="this is resume")
 
-    def __str__(self):
-        return "%s %s" % (self.first_name, self.last_name)
-
     class Meta:
         db_table = 'user_company'
         verbose_name = 'user_company'
@@ -82,7 +79,7 @@ class UserCompany(models.Model):
 
 class Products(models.Model):
     user = models.ForeignKey(UserCompany,related_name='company_products',on_delete=models.CASCADE)
-    SKU = models.CharField(max_length=200,unique=True,default="unkown sku")
+    SKU = models.CharField(max_length=200,default="unkown sku")
     name = models.CharField(max_length=200)
     image = models.CharField(max_length=200,default="unkown image")
     type  = models.SmallIntegerField(choices=ProductType.choices(),default=0)
@@ -94,23 +91,38 @@ class Products(models.Model):
 
     class Meta:
         db_table = 'products'
+        verbose_name = 'products'
+        verbose_name_plural = 'products'
 
 class Carts(models.Model):
     user = models.ForeignKey(UserCustomer,related_name='customer_carts',on_delete=models.CASCADE)
     product = models.ForeignKey(Products, related_name='products_carts',on_delete=models.CASCADE)
+    number = models.CharField(max_length=200,default=1)
     total_price = models.CharField(max_length=200,default=0)
 
     class Meta:
         db_table = 'carts'
+        verbose_name = 'carts'
+        verbose_name_plural = 'carts'
 
 class Orders(models.Model):
-    customer = models.ForeignKey(UserCustomer,related_name='customer_orders',on_delete=models.CASCADE)
-    company = models.ForeignKey(UserCompany,related_name='company_orders',on_delete=models.CASCADE)
-    status = models.SmallIntegerField(choices=OrderStatus.choices(),default=0)
+    product = models.ForeignKey(Products,related_name='order_product',on_delete=models.CASCADE)
     number = models.CharField(max_length=200,default=1)
-    money = models.CharField(max_length=200,default=1)
-    payment = models.SmallIntegerField(choices=OrderPayment.choices(),default=0)
+    total_money = models.CharField(max_length=200,default=1)
 
     class Meta:
         db_table = 'orders'
+        verbose_name = 'orders'
+        verbose_name_plural = 'orders'
 
+class OrderDtails(models.Model):
+    order = models.ForeignKey(Orders,related_name='order_dtails',on_delete=models.CASCADE)
+    user = models.ForeignKey(UserCustomer,related_name='order_user',on_delete=models.CASCADE)
+    status = models.SmallIntegerField(choices=OrderStatus.choices(),default=0)
+    all_money = models.CharField(max_length=200,default=1)
+    payment = models.SmallIntegerField(choices=OrderPayment.choices(),default=0)
+
+    class Meta:
+        db_table = 'order_details'
+        verbose_name = 'order_details'
+        verbose_name_plural = 'order_details'
