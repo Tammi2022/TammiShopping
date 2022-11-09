@@ -258,18 +258,33 @@ class CustomerCartsView(APIView):
         product = Products.objects.filter(id=cart_data['product']).first()
         if not product:
             return Response({"code": "404", "message": "product not exists"})
-        cart = Carts.objects.create(
-            user=user,
-            product=product,
-            number=cart_data["number"],
-            total_price=cart_data["total_price"],
-        )
-        res = {
-            "code":200,
-            "message":'success',
-            "data":{
-                "cartId":cart.id
+        cart = Carts.objects.filter(user=user, product=product)
+        PRICE = product.price*cart_data["number"]
+        if not cart:
+            newcart = Carts.objects.create(
+                user=user,
+                product=product,
+                number=cart_data["number"],
+                total_price=PRICE
+            )
+            res = {
+                "code":200,
+                "message":'success',
+                "data":{
+                    "cartId":newcart.id
+                }
             }
-        }
-        return JsonResponse(res)
+            return JsonResponse(res)
+        else:
+            cart.update(number=cart_data["number"]+cart.first().number, total_price=PRICE+cart.first().total_price)
+            customer_carts = Carts.objects.filter(user=user).all()
+            carts_data = CartsModelSerializer(customer_carts, many=True).data
+            res = {
+                "code": 200,
+                "message": "success",
+                "data": {
+                    'list': carts_data,
+                }
+            }
+            return Response(res)
 

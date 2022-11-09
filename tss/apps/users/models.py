@@ -80,8 +80,8 @@ class Products(models.Model):
     image = models.CharField(max_length=200,default="unkown image")
     type  = models.SmallIntegerField(choices=ProductType.choices(),default=0)
     categories = models.CharField(max_length=200,default="unkown categories")
-    price = models.CharField(max_length=200,default=0)
-    number = models.CharField(max_length=200,default=0)
+    price = models.IntegerField(max_length=200,default=0)
+    number = models.IntegerField(max_length=200,default=0)
     visible = models.BooleanField(default=True) #1 可见 0 不可见
     description = models.TextField(default="this is a description")
     def __str__(self):
@@ -94,8 +94,8 @@ class Products(models.Model):
 class Carts(models.Model):
     user = models.ForeignKey(UserCustomer,related_name='customer_carts',on_delete=models.CASCADE)
     product = models.ForeignKey(Products, related_name='products_carts',on_delete=models.CASCADE)
-    number = models.CharField(max_length=200,default=0)
-    total_price = models.CharField(max_length=200,default=0)
+    number = models.IntegerField(max_length=200,default=0)
+    total_price = models.IntegerField(max_length=200,default=0)
 
     class Meta:
         db_table = 'carts'
@@ -105,7 +105,7 @@ class Carts(models.Model):
 class Orders(models.Model):
     user = models.ForeignKey(UserCustomer, related_name='order_user', on_delete=models.CASCADE)
     status = models.SmallIntegerField(choices=OrderStatus.choices(), default=0)
-    all_money = models.CharField(max_length=200, default=0)
+    all_money = models.IntegerField(max_length=200, default=0)
     payment = models.SmallIntegerField(choices=OrderPayment.choices(), default=0)
 
     class Meta:
@@ -116,8 +116,8 @@ class Orders(models.Model):
 class OrderDtails(models.Model):
     order = models.ForeignKey(Orders,related_name='orderdtails_dtails',on_delete=models.CASCADE)
     product = models.ForeignKey(Products, related_name='orderdtails_product', on_delete=models.CASCADE)
-    number = models.CharField(max_length=200, default=0)
-    total_money = models.CharField(max_length=200, default=0)
+    number = models.IntegerField(max_length=200, default=0)
+    total_money = models.IntegerField(max_length=200, default=0)
 
     class Meta:
         db_table = 'order_details'
