@@ -1,6 +1,6 @@
 #序列化
 from rest_framework import serializers
-from apps.users.models import UserCustomer,UserCompany,Products,Carts
+from apps.users.models import UserCustomer,UserCompany,Products,Carts,Orders,OrderDtails
 
 class CreateUserCustomerSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=200)
@@ -42,10 +42,12 @@ class CreateProductsSerializer(serializers.Serializer):
         return attrs
 class ProductsModelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Products #绑定哪一个模型
-        fields = "__all__" #解析哪些字段
+        model = Products
+        fields = "__all__"
 
-class CartsModelSerializer(serializers.Serializer):
+class CartsModelSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name')
+    product_company = serializers.CharField(source='product.user')
     class Meta:
         model = Carts
-        fields = "__all__"
+        exclude = ['id','user','product']

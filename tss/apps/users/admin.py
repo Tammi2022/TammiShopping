@@ -31,9 +31,9 @@ class CartsAdmin(admin.ModelAdmin):
 @admin.register(Orders)
 class OrdersAdmin(admin.ModelAdmin):
     exclude = ['created_at', 'updated_at'] #展示在详情页，exclude是排除
-    list_display = ['id','product','number','total_money'] #列表页
+    list_display = ['id','user','all_money','payment'] #列表页
 
 @admin.register(OrderDtails)
 class OrderDtailsAdmin(admin.ModelAdmin):
     exclude = ['created_at', 'updated_at'] #展示在详情页，exclude是排除
-    list_display = ['id','order','user','status','all_money','payment'] #列表页
+    list_display = ['order','product','number','total_money'] #列表页

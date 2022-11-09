@@ -1,9 +1,11 @@
 import jwt,json,time
 from django.http import  JsonResponse
 from django.conf import settings
-from apps.users.models import UserCustomer,UserCompany,Products
+from apps.users.models import UserCustomer,UserCompany,Products,Carts
 from apps.users.serializers import UserCompanyModelSerializer,UserCustomerModelSerializer,\
-    CreateUserCompanySerializer,CreateUserCustomerSerializer,ProductsModelSerializer,CreateProductsSerializer,CartsModelSerializer
+    CreateUserCompanySerializer,CreateUserCustomerSerializer,\
+    ProductsModelSerializer,CreateProductsSerializer,\
+    CartsModelSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -28,7 +30,6 @@ class UserCustomerView(APIView):
             }
         }
         return Response(res)
-
     def post(self,request):
         user_data = json.loads(request.body)
         serializer = CreateUserCustomerSerializer(
@@ -232,7 +233,7 @@ class CustomerCartsView(APIView):
             return Response(res)
         offset = request.GET.get('offset', 0)
         limit = request.GET.get('limit', 10)
-        customer_carts = user.customer_carts.all()
+        customer_carts = Carts.objects.filter(user=user).all()
         total_count = customer_carts.count()
         _carts = customer_carts[offset:offset + limit]
         carts_data = CartsModelSerializer(_carts, many=True).data
@@ -249,4 +250,26 @@ class CustomerCartsView(APIView):
             }
         }
         return Response(res)
+    def post(self,request, user_id):
+        cart_data = json.loads(request.body)
+        user = UserCustomer.objects.filter(pk=user_id).first()
+        if not user:
+            return Response({"code": "404", "message": "user not exists"})
+        product = Products.objects.filter(id=cart_data['product']).first()
+        if not product:
+            return Response({"code": "404", "message": "product not exists"})
+        cart = Carts.objects.create(
+            user=user,
+            product=product,
+            number=cart_data["number"],
+            total_price=cart_data["total_price"],
+        )
+        res = {
+            "code":200,
+            "message":'success',
+            "data":{
+                "cartId":cart.id
+            }
+        }
+        return JsonResponse(res)
 

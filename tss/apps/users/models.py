@@ -103,9 +103,10 @@ class Carts(models.Model):
         verbose_name_plural = 'carts'
 
 class Orders(models.Model):
-    product = models.ForeignKey(Products,related_name='order_product',on_delete=models.CASCADE)
-    number = models.CharField(max_length=200,default=0)
-    total_money = models.CharField(max_length=200,default=0)
+    user = models.ForeignKey(UserCustomer, related_name='order_user', on_delete=models.CASCADE)
+    status = models.SmallIntegerField(choices=OrderStatus.choices(), default=0)
+    all_money = models.CharField(max_length=200, default=0)
+    payment = models.SmallIntegerField(choices=OrderPayment.choices(), default=0)
 
     class Meta:
         db_table = 'orders'
@@ -113,11 +114,10 @@ class Orders(models.Model):
         verbose_name_plural = 'orders'
 
 class OrderDtails(models.Model):
-    order = models.ForeignKey(Orders,related_name='order_dtails',on_delete=models.CASCADE)
-    user = models.ForeignKey(UserCustomer,related_name='order_user',on_delete=models.CASCADE)
-    status = models.SmallIntegerField(choices=OrderStatus.choices(),default=0)
-    all_money = models.CharField(max_length=200,default=0)
-    payment = models.SmallIntegerField(choices=OrderPayment.choices(),default=0)
+    order = models.ForeignKey(Orders,related_name='orderdtails_dtails',on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, related_name='orderdtails_product', on_delete=models.CASCADE)
+    number = models.CharField(max_length=200, default=0)
+    total_money = models.CharField(max_length=200, default=0)
 
     class Meta:
         db_table = 'order_details'
