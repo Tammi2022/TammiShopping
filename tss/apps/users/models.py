@@ -123,3 +123,12 @@ class OrderDtails(models.Model):
         db_table = 'order_details'
         verbose_name = 'order_details'
         verbose_name_plural = 'order_details'
+
+class OrderCompany(models.Model):
+    order = models.ForeignKey(Orders, related_name='ordercompany_order', on_delete=models.CASCADE)
+    orderdetail = models.ForeignKey(OrderDtails, related_name='ordercompany_orderdetail', on_delete=models.CASCADE)
+    company = models.ForeignKey(UserCompany, related_name='ordercompany_company', on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'order_company'
+        verbose_name = 'order_company'
+        verbose_name_plural = 'order_company'

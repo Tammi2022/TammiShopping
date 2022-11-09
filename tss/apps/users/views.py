@@ -1,11 +1,11 @@
 import jwt,json,time
 from django.http import  JsonResponse
 from django.conf import settings
-from apps.users.models import UserCustomer,UserCompany,Products,Carts
+from apps.users.models import UserCustomer,UserCompany,Products,Carts,Orders,OrderDtails,OrderCompany
 from apps.users.serializers import UserCompanyModelSerializer,UserCustomerModelSerializer,\
     CreateUserCompanySerializer,CreateUserCustomerSerializer,\
     ProductsModelSerializer,CreateProductsSerializer,\
-    CartsModelSerializer
+    CartsModelSerializer,OrdersModelSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -288,3 +288,76 @@ class CustomerCartsView(APIView):
             }
             return Response(res)
 
+class OrdersView(APIView):
+    authentication_classes = ()
+    def get(self, request,email):
+        user = UserCompany.objects.filter(email=email).first()
+        if user:#表示这是一个company
+            return Response({"message": "查询公司下订单功能暂未完成"})
+
+        user = UserCustomer.objects.filter(email=email).first()
+        if user:#表示这是一个customer
+            order = Orders.objects.filter(user=user).first()
+            # return Response({"message": f"{orders}"})
+            if not order:
+                return Response({"code": "404", "message": "orders not exists"})
+            orders_detail = OrderDtails.objects.filter(order=order).all()
+            # return Response({"message": f"{orders_detail}"})
+            offset = request.GET.get('offset', 0)
+            limit = request.GET.get('limit', 10)
+            total_count = orders_detail.count()
+            _orders = orders_detail[offset:offset + limit]
+            orders_data = OrdersModelSerializer(_orders, many=True).data
+            res = {
+                "code": 200,
+                "message": "success",
+                "data": {
+                    'list': orders_data,
+                    "pagination": {
+                        "offset": offset,
+                        "limit": limit,
+                        "total_count": total_count
+                    }
+                }
+            }
+            return Response(res)
+
+        if not user:
+            return Response({ "code": "404","message": f"user{email} not exists"})
+    def post(self,request,email):
+        order_data = json.loads(request.body)
+        user = UserCustomer.objects.filter(email=email).first()
+        if not user:
+            return Response({"code": "404", "message": "user not exists"})
+        neworder = Orders.objects.create(
+            user=user,
+            status=order_data['status'],
+            payment=order_data['payment'],
+        )
+        product = order_data['product']#上传类似于{productid:number}
+        alm = 0
+        for i in product:
+            p = Products.objects.filter(id=i)
+            num = product[i]
+            tom = p.first().price*num
+            neworderdetails = OrderDtails.objects.create(
+                order=neworder,
+                product=p.first(),
+                number=num,
+                total_money=tom
+            )
+            newordercompany = OrderCompany.objects.create(
+                order=neworder,
+                orderdetail=neworderdetails,
+                company=p.first().user
+            )
+            alm += tom
+        Orders.objects.filter(pk=neworder.id).update(all_money=alm)
+        res = {
+            "code":200,
+            "message":'success',
+            "data":{
+                "neworderId":neworder.id
+            }
+        }
+        return JsonResponse(res)

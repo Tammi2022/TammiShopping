@@ -51,3 +51,25 @@ class CartsModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carts
         exclude = ['id','user','product']
+
+class OrdersModelSerializer(serializers.ModelSerializer):
+    order_id = serializers.CharField(source='order.id')
+    order_status = serializers.CharField(source='order.status')
+    order_all_money = serializers.CharField(source='order.all_money')
+    order_payment = serializers.CharField(source='order.payment')
+    product_name = serializers.CharField(source='product.name')
+    product_company = serializers.CharField(source='product.user')
+    class Meta:
+        model = OrderDtails
+        fields = "__all__"
+
+class OrdersModelSerializer(serializers.ModelSerializer):
+    order_id = serializers.CharField(source='order.id')
+    order_status = serializers.CharField(source='order.status')
+    order_all_money = serializers.CharField(source='order.all_money')
+    order_payment = serializers.CharField(source='order.payment')
+    product_name = serializers.CharField(source='product.name')
+    product_company = serializers.CharField(source='product.user')
+    class Meta:
+        model = OrderDtails
+        fields = "__all__"
