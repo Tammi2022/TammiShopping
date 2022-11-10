@@ -396,6 +396,27 @@ class OrdersView(APIView):
 
 class UsersView(APIView):
     authentication_classes = ()
+    def get(self,request):
+        import http.client
+        store_hash = '94c48q94u3'
+        url = f'https://api.bigcommerce.com/stores/{store_hash}/v2/customers'
+        conn = http.client.HTTPSConnection("api.bigcommerce.com")
+        headers = {
+            'Content-Type': "application/json",
+            'X-Auth-Token': "rcura346e1dgpt2abtyu64zzwm0ob2t"
+        }
+        t = f"/stores/{store_hash}/v3/customers"
+        conn.request("GET",t, headers=headers)
+        res = conn.getresponse()
+        data = res.read()
+        print(data.decode("utf-8"))
+        res = {
+            "code": 200,
+            "message": 'success',
+            "data": json.loads(data)
+        }
+        return Response(res)
+
     def post(self,request):
         import  requests
         store_hash = '94c48q94u3'
