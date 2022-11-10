@@ -16,10 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from apps.users.views import UserCustomerView,UserLoginView,UserCompanyView,\
-    ProductsView,CompanyProductsView,CustomerCartsView,OrdersView
+    ProductsView,CompanyProductsView,CustomerCartsView,OrdersView,UsersView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/users', UsersView.as_view()),
     path('api/users/customer',UserCustomerView.as_view()),
     path('api/users/company',UserCompanyView.as_view()),
     path('api/login',UserLoginView.as_view()),

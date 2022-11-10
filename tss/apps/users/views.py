@@ -393,3 +393,26 @@ class OrdersView(APIView):
             }
         }
         return JsonResponse(res)
+
+class UsersView(APIView):
+    authentication_classes = ()
+    def post(self,request):
+        import  requests
+        store_hash = '94c48q94u3'
+        url = f'https://api.bigcommerce.com/stores/{store_hash}/v2/customers'
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Auth-Token": "rcura346e1dgpt2abtyu64zzwm0ob2t"
+        }
+        user_data = json.loads(request.body)
+        newuser = requests.post(url, headers=headers, data=json.dumps({
+            "email": user_data.get('email'),
+            'first_name': user_data.get('first_name'),
+            "last_name": user_data.get('last_name')
+        }))
+        res = {
+            "code":200,
+            "message":'success',
+        }
+        return JsonResponse(res)
