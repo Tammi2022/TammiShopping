@@ -1,4 +1,4 @@
-import jwt,json,time
+import jwt,json,time,http.client
 from django.http import  JsonResponse
 from django.conf import settings
 from apps.users.models import UserCustomer,UserCompany,Products,Carts,Orders,OrderDtails,OrderCompany
@@ -416,15 +416,15 @@ class UsersView(APIView):
             "data": json.loads(data)
         }
         return Response(res)
-
     def post(self,request):
         import  requests
         store_hash = '94c48q94u3'
         url = f'https://api.bigcommerce.com/stores/{store_hash}/v2/customers'
+        token = "rcura346e1dgpt2abtyu64zzwm0ob2t"
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "X-Auth-Token": "rcura346e1dgpt2abtyu64zzwm0ob2t"
+            "X-Auth-Token": token
         }
         user_data = json.loads(request.body)
         newuser = requests.post(url, headers=headers, data=json.dumps({
@@ -437,3 +437,76 @@ class UsersView(APIView):
             "message":'success',
         }
         return JsonResponse(res)
+
+class OrdersBCView(APIView):
+    authentication_classes = ()
+    def get(self, request):
+        store_hash = '94c48q94u3'
+        url = f'https://api.bigcommerce.com/stores/{store_hash}/v2/customers'
+        token = "rcura346e1dgpt2abtyu64zzwm0ob2t"
+        conn = http.client.HTTPSConnection("api.bigcommerce.com")
+        headers = {
+            'Content-Type': "application/json",
+            'Accept': "application/json",
+            'X-Auth-Token': token
+        }
+        conn.request("GET", f"/stores/{store_hash}/v2/orders", headers=headers)
+        res = conn.getresponse()
+        data = res.read()
+        print(data.decode("utf-8"))
+        res = {
+            "code": 200,
+            "message": 'success',
+            "data": json.loads(data)
+        }
+        return Response(res)
+    def post(self,request):
+        store_hash = '94c48q94u3'
+        url = f'https://api.bigcommerce.com/stores/{store_hash}/v2/customers'
+        token = "rcura346e1dgpt2abtyu64zzwm0ob2t"
+        conn = http.client.HTTPSConnection("api.bigcommerce.com")
+        payload = "{\n  \"billing_address\": {\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Doe\",\n    \"street_1\": \"123 Main Street\",\n    \"city\": \"Austin\",\n    \"state\": \"Texas\",\n    \"zip\": \"78751\",\n    \"country\": \"United States\",\n    \"country_iso2\": \"US\",\n    \"email\": \"janedoe@email.com\"\n  },\n  \"products\": [\n    {\n      \"name\": \"BigCommerce Coffee Mug\",\n      \"quantity\": 1,\n      \"price_inc_tax\": 50,\n      \"price_ex_tax\": 45\n    }\n  ]\n}"
+        headers = {
+            'Content-Type': "application/json",
+            'Accept': "application/json",
+            'X-Auth-Token': token
+        }
+        conn.request("POST", f"/stores/{store_hash}/v2/orders", payload, headers)
+        res = conn.getresponse()
+        data = res.read()
+        print(data.decode("utf-8"))
+        res = {
+            "code": 200,
+            "message": 'success',
+            "data": json.loads(data)
+        }
+        return Response(res)
+
+class UserPSWView(APIView):
+    def post(self,request, email):
+        pwd_data = json.loads(request.body)
+        user = UserCustomer.objects.filter(email=email)
+        if not user:
+            user = UserCompany.objects.filter(email=email)
+            if not user:
+                return Response({"code": "404", "message": "user not exists"})
+            user.update(password=pwd_data["password"])
+            ucdt = UserCompanyModelSerializer(user, many=True).data
+            res = {
+                "code": 200,
+                "message": "success",
+                "data": {
+                    'list': ucdt,
+                }
+            }
+            return Response(res)
+        user.update(password=pwd_data["password"])
+        ucdt = UserCustomerModelSerializer(user, many=True).data
+        res = {
+            "code": 200,
+            "message": "success",
+            "data": {
+                'list': ucdt,
+            }
+        }
+        return Response(res)

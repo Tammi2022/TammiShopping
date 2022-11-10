@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from apps.users.views import UserCustomerView,UserLoginView,UserCompanyView,\
-    ProductsView,CompanyProductsView,CustomerCartsView,OrdersView,UsersView
+    ProductsView,CompanyProductsView,CustomerCartsView,OrdersView,UsersView,OrdersBCView,UserPSWView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +28,6 @@ urlpatterns = [
     path('api/users/company/<int:user_id>/products',CompanyProductsView.as_view()),
     path('api/users/customer/<int:user_id>/carts',CustomerCartsView.as_view()),
     path('api/orders/<str:email>',OrdersView.as_view()),
+    path('api/bc/orders',OrdersBCView.as_view()),
+    path('api/<str:email>/password',UserPSWView.as_view()),
 ]
