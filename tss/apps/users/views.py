@@ -172,6 +172,8 @@ class ProductsView(APIView):
             data = {
             "name":product_data.get('name'),
             "user":product_data.get('user'),
+            "price":product_data.get('price'),
+            "number":product_data.get('number'),
         })
 
         if not serializer.is_valid():
@@ -184,6 +186,8 @@ class ProductsView(APIView):
         product = Products.objects.create(
             name=product_data['name'],
             user=_user,
+            price=product_data['price'],
+            number=product_data['number'],
         )
         res = {
             "code":200,
@@ -293,15 +297,42 @@ class OrdersView(APIView):
     def get(self, request,email):
         user = UserCompany.objects.filter(email=email).first()
         if user:#表示这是一个company
-            return Response({"message": "查询公司下订单功能暂未完成"})
+            orderC = OrderCompany.objects.filter(company=user).all()
+            if not orderC:
+                return Response({"code": "404", "message": "orders not exists"})
+            orders_detail = OrderDtails.objects.filter(pk=orderC[0].orderdetail_id).all()
+            for order in orderC[1:]:
+                od = OrderDtails.objects.filter(pk=order.orderdetail_id).all()
+                orders_detail = orders_detail | od
+            # return Response({ "message": orders_detail})
+            offset = request.GET.get('offset', 0)
+            limit = request.GET.get('limit', 10)
+            total_count = orders_detail.count()
+            _orders = orders_detail[offset:offset + limit]
+            orders_data = OrdersModelSerializer(_orders, many=True).data
+            res = {
+                "code": 200,
+                "message": "success",
+                "data": {
+                    'list': orders_data,
+                    "pagination": {
+                        "offset": offset,
+                        "limit": limit,
+                        "total_count": total_count
+                    }
+                }
+            }
+            return Response(res)
 
         user = UserCustomer.objects.filter(email=email).first()
         if user:#表示这是一个customer
-            order = Orders.objects.filter(user=user).first()
-            # return Response({"message": f"{orders}"})
+            order = Orders.objects.filter(user=user).all()
             if not order:
                 return Response({"code": "404", "message": "orders not exists"})
-            orders_detail = OrderDtails.objects.filter(order=order).all()
+            orders_detail = OrderDtails.objects.filter(order=order[0]).all()
+            for o in order[1:]:
+                od = OrderDtails.objects.filter(order=o).all()
+                orders_detail = orders_detail | od
             # return Response({"message": f"{orders_detail}"})
             offset = request.GET.get('offset', 0)
             limit = request.GET.get('limit', 10)
@@ -339,6 +370,7 @@ class OrdersView(APIView):
         for i in product:
             p = Products.objects.filter(id=i)
             num = product[i]
+            p.update(number=p.first().number-num)
             tom = p.first().price*num
             neworderdetails = OrderDtails.objects.create(
                 order=neworder,
