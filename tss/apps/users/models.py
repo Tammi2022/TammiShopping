@@ -103,7 +103,7 @@ class Carts(models.Model):
         verbose_name_plural = 'carts'
 
 class Orders(models.Model):
-    user = models.ForeignKey(UserCustomer, related_name='order_user', on_delete=models.CASCADE)
+    user = models.ForeignKey(UserCustomer, related_name='order_user', on_delete=None)
     status = models.SmallIntegerField(choices=OrderStatus.choices(), default=0)
     all_money = models.IntegerField(max_length=200, default=0)
     payment = models.SmallIntegerField(choices=OrderPayment.choices(), default=0)
@@ -115,7 +115,7 @@ class Orders(models.Model):
 
 class OrderDtails(models.Model):
     order = models.ForeignKey(Orders,related_name='orderdtails_dtails',on_delete=models.CASCADE)
-    product = models.ForeignKey(Products, related_name='orderdtails_product', on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, related_name='orderdtails_product', on_delete=None)
     number = models.IntegerField(max_length=200, default=0)
     total_money = models.IntegerField(max_length=200, default=0)
 
